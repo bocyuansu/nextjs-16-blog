@@ -1,6 +1,7 @@
 "use server";
 
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { fetchAuthMutation } from "@/lib/auth-server";
 import { postSchema } from "@/schemas/blog";
 // import { createPostSchema } from '@/schemas/blog';
@@ -30,5 +31,10 @@ export async function createPostAction(values: z.infer<typeof postSchema>) {
   }
 
   // Mutate data
+  updateTag("blog");
+}
+
+export async function deletePostAction(postId: Id<"posts">) {
+  await fetchAuthMutation(api.posts.deletePost, { postId });
   updateTag("blog");
 }

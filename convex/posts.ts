@@ -1,19 +1,36 @@
-import { mutation, query } from './_generated/server';
-import { ConvexError, v } from 'convex/values';
-import { authComponent } from './auth';
-import { Doc, Id } from './_generated/dataModel';
-import { filter } from 'convex-helpers/server/filter';
+import { mutation, query } from "./_generated/server";
+import { ConvexError, v } from "convex/values";
+import { authComponent } from "./auth";
+import { DataModel, Doc, Id } from "./_generated/dataModel";
+import { filter } from "convex-helpers/server/filter";
+import { Triggers } from "convex-helpers/server/triggers";
+
+const triggers = new Triggers<DataModel>();
+
+triggers.register("posts", async (ctx, change) => {
+  if (change.operation === "delete") {
+    for await (const comment of ctx.db
+      .query("comments")
+      .withIndex("by_postId", (q) => q.eq("postId", change.id))) {
+      await ctx.db.delete(comment._id);
+    }
+  }
+});
 
 export const createPost = mutation({
-  args: { title: v.string(), body: v.string(), imageStorageId: v.optional(v.id('_storage')) },
+  args: {
+    title: v.string(),
+    body: v.string(),
+    imageStorageId: v.optional(v.id("_storage")),
+  },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
 
     if (!user) {
-      throw new ConvexError('Not Authenticated');
+      throw new ConvexError("Not Authenticated");
     }
 
-    const blogArticle = await ctx.db.insert('posts', {
+    const blogArticle = await ctx.db.insert("posts", {
       title: args.title,
       body: args.body,
       authorId: user._id,
@@ -27,13 +44,15 @@ export const createPost = mutation({
 export const getPosts = query({
   args: {},
   handler: async (ctx) => {
-    const posts = await ctx.db.query('posts').order('desc').collect();
+    const posts = await ctx.db.query("posts").order("desc").collect();
 
     return Promise.all(
       posts.map(async (post) => ({
         ...post,
         imageUrl:
-          post.imageStorageId !== undefined ? await ctx.storage.getUrl(post.imageStorageId) : null,
+          post.imageStorageId !== undefined
+            ? await ctx.storage.getUrl(post.imageStorageId)
+            : null,
       })),
     );
   },
@@ -45,7 +64,7 @@ export const generateImageUpload = mutation({
     const user = await authComponent.getAuthUser(ctx);
 
     if (!user) {
-      throw new ConvexError('用戶未登入 !');
+      throw new ConvexError("用戶未登入 !");
     }
 
     return await ctx.storage.generateUploadUrl();
@@ -53,14 +72,16 @@ export const generateImageUpload = mutation({
 });
 
 export const getPostById = query({
-  args: { postId: v.id('posts') },
+  args: { postId: v.id("posts") },
   handler: async (ctx, args) => {
-    const post = await ctx.db.get('posts', args.postId);
+    const post = await ctx.db.get("posts", args.postId);
 
     if (!post) return null;
 
     const resolvedImageUrl =
-      post.imageStorageId !== undefined ? await ctx.storage.getUrl(post.imageStorageId) : null;
+      post.imageStorageId !== undefined
+        ? await ctx.storage.getUrl(post.imageStorageId)
+        : null;
 
     return {
       ...post,
@@ -85,13 +106,13 @@ export const searchPosts = query({
 
     const results: searchResultTypes[] = [];
 
-    const seen = new Set<Id<'posts'>>();
+    const seen = new Set<Id<"posts">>();
 
     const termHasChinese = /[\u4e00-\u9fa5]/.test(args.term);
 
-    const safeTerm = args.term.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const safeTerm = args.term.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-    const pushDocs = (docs: Doc<'posts'>[]) => {
+    const pushDocs = (docs: Doc<"posts">[]) => {
       for (const doc of docs) {
         if (seen.has(doc._id)) continue;
 
@@ -105,29 +126,46 @@ export const searchPosts = query({
       }
     };
 
-    const search = (index: 'search_title' | 'search_body', field: 'title' | 'body') => {
+    const search = (
+      index: "search_title" | "search_body",
+      field: "title" | "body",
+    ) => {
       if (termHasChinese) {
-        return filter(ctx.db.query('posts'), (post) =>
+        return filter(ctx.db.query("posts"), (post) =>
           post[field].toLowerCase().includes(safeTerm.toLowerCase()),
         ).take(limit);
       }
 
       return ctx.db
-        .query('posts')
+        .query("posts")
         .withSearchIndex(index, (q) => q.search(field, args.term.trim()))
         .take(limit);
     };
 
     // 1. 優先搜尋標題
-    const titleMatches = await search('search_title', 'title');
+    const titleMatches = await search("search_title", "title");
     pushDocs(titleMatches);
 
     // 2. 標題結果不足，再搜尋內容
     if (results.length < limit) {
-      const bodyMatches = await search('search_body', 'body');
+      const bodyMatches = await search("search_body", "body");
       pushDocs(bodyMatches);
     }
 
     return results;
+  },
+});
+
+export const deletePost = mutation({
+  args: { postId: v.id("posts") },
+  handler: async (ctx, args) => {
+    const user = await authComponent.getAuthUser(ctx);
+
+    if (!user) {
+      throw new ConvexError("Not Authenticated");
+    }
+
+    const triggerCtx = triggers.wrapDB(ctx);
+    await triggerCtx.db.delete("posts", args.postId);
   },
 });

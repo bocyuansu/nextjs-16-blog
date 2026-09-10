@@ -199,10 +199,10 @@ export default function CreatePage() {
                 {isPending ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
-                    <span>Creating...</span>
+                    <span>新增中</span>
                   </>
                 ) : (
-                  <span>Create Post</span>
+                  <span>新增文章</span>
                 )}
               </Button>
             </FieldGroup>
