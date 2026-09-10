@@ -1,16 +1,11 @@
 // UI
-import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import BlogItemMenu from "@/components/web/BlogItemMenu";
+import BlogItem from "@/components/web/BlogItem";
 //Convex
 import { api } from "@/convex/_generated/api";
-import { Doc } from "@/convex/_generated/dataModel";
 import { fetchQuery } from "convex/nextjs";
 // Next
 import { Metadata } from "next";
 import { cacheLife, cacheTag } from "next/cache";
-import Image from "next/image";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Blog | Next.js 16 Tutorial",
@@ -50,51 +45,6 @@ async function LoadBlogList() {
         <BlogItem key={post._id} post={post} />
       ))}
     </div>
-  );
-}
-
-type BlogItemProps = {
-  post: Doc<"posts"> & {
-    imageUrl: string | null;
-  };
-};
-
-function BlogItem({ post }: BlogItemProps) {
-  return (
-    <Card key={post._id} className="pt-0">
-      <div className="relative h-48 w-full overflow-hidden">
-        <Image
-          src={
-            post.imageUrl ??
-            "https://images.unsplash.com/photo-1526779259212-939e64788e3c?q=80&w=1174&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          }
-          alt="image"
-          fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="rounded-t-lg object-cover"
-        />
-
-        <BlogItemMenu postId={post._id} />
-      </div>
-
-      <CardContent className="flex-1">
-        <Link href={`/blog/${post._id}`}>
-          <h1 className="text-2xl font-bold hover:text-primary">
-            {post.title}
-          </h1>
-        </Link>
-        <p className="text-muted-foreground">{post.body.slice(0, 120)}</p>
-      </CardContent>
-
-      <CardFooter>
-        <Link
-          className={buttonVariants({ className: "w-full text-lg" })}
-          href={`/blog/${post._id}`}
-        >
-          Read more
-        </Link>
-      </CardFooter>
-    </Card>
   );
 }
 

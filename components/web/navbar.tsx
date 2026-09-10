@@ -1,19 +1,18 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Button, buttonVariants } from '../ui/button';
-import { ThemeToggle } from './theme-toggle';
-import { useConvexAuth } from 'convex/react';
-import { authClient } from '@/lib/auth-client';
-import { toast } from '../ui/toast';
-import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
-import { Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import SearchInput from './SearchInput';
+import Link from "next/link";
+import { Button, buttonVariants } from "../ui/button";
+import { ThemeToggle } from "./theme-toggle";
+import { Authenticated, Unauthenticated } from "convex/react";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "../ui/toast";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import SearchInput from "./SearchInput";
 
 export default function Navbar() {
-  const { isAuthenticated, isLoading } = useConvexAuth();
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -29,8 +28,8 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           <Link
             className={cn(
-              buttonVariants({ variant: 'ghost' }),
-              'text-lg font-bold',
+              buttonVariants({ variant: "ghost" }),
+              "text-lg font-bold",
             )}
             href="/"
           >
@@ -38,24 +37,25 @@ export default function Navbar() {
           </Link>
           <Link
             className={cn(
-              buttonVariants({ variant: 'ghost' }),
-              'text-lg font-bold',
+              buttonVariants({ variant: "ghost" }),
+              "text-lg font-bold",
             )}
             href="/blog"
           >
             Blog
           </Link>
-          {!isAuthenticated ? null : (
+
+          <Authenticated>
             <Link
               className={cn(
-                buttonVariants({ variant: 'ghost' }),
-                'text-lg font-bold',
+                buttonVariants({ variant: "ghost" }),
+                "text-lg font-bold",
               )}
               href="/create"
             >
               Create
             </Link>
-          )}
+          </Authenticated>
         </div>
       </div>
 
@@ -63,7 +63,8 @@ export default function Navbar() {
         <div className="hidden md:block mr-2">
           <SearchInput />
         </div>
-        {isLoading ? null : isAuthenticated ? (
+
+        <Authenticated>
           <Button
             disabled={isPending}
             onClick={() =>
@@ -72,16 +73,16 @@ export default function Navbar() {
                   fetchOptions: {
                     onSuccess: () => {
                       toast.add({
-                        type: 'success',
-                        description: '登出成功 !',
+                        type: "success",
+                        description: "登出成功 !",
                       });
-                      router.push('/');
+                      router.push("/");
                     },
                     onError: (error) => {
                       toast.add({
-                        type: 'error',
+                        type: "error",
                         description: error.error.message,
-                        priority: 'high',
+                        priority: "high",
                       });
                     },
                   },
@@ -98,19 +99,19 @@ export default function Navbar() {
               <span>登出</span>
             )}
           </Button>
-        ) : (
-          <>
-            <Link className={buttonVariants()} href="/auth/sign-up">
-              Sign up
-            </Link>
-            <Link
-              className={buttonVariants({ variant: 'outline' })}
-              href="/auth/login"
-            >
-              Login
-            </Link>
-          </>
-        )}
+        </Authenticated>
+
+        <Unauthenticated>
+          <Link className={buttonVariants()} href="/auth/sign-up">
+            Sign up
+          </Link>
+          <Link
+            className={buttonVariants({ variant: "outline" })}
+            href="/auth/login"
+          >
+            Login
+          </Link>
+        </Unauthenticated>
 
         <ThemeToggle />
       </div>

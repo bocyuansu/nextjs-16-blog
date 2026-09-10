@@ -159,10 +159,18 @@ export const searchPosts = query({
 export const deletePost = mutation({
   args: { postId: v.id("posts") },
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const post = await ctx.db.get("posts", args.postId);
+    if (!post) {
+      throw new ConvexError("找不到此文章!");
+    }
 
+    const user = await authComponent.getAuthUser(ctx);
     if (!user) {
-      throw new ConvexError("Not Authenticated");
+      throw new ConvexError("Not Authenticated!");
+    }
+
+    if (post.authorId !== user._id) {
+      throw new ConvexError("用戶不是作者，不能刪除文章!");
     }
 
     const triggerCtx = triggers.wrapDB(ctx);
