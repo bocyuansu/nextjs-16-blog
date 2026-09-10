@@ -19,7 +19,7 @@ export default function Navbar() {
   return (
     <nav className="w-full py-5 flex items-center justify-between">
       <div className="flex items-center gap-8">
-        <Link href="/">
+        <Link href="/" className="hidden md:block">
           <h1 className="text-3xl font-bold">
             Next<span className="text-primary">Pro</span>
           </h1>

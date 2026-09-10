@@ -17,6 +17,18 @@ import { api } from "@/convex/_generated/api";
 import { Card, CardContent, CardFooter } from "../ui/card";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
+import { useState } from "react";
 
 type BlogItemProps = {
   post: Doc<"posts"> & {
@@ -35,6 +47,7 @@ export default function BlogItem({ post }: BlogItemProps) {
           }
           alt="image"
           fill
+          loading="eager"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="rounded-t-lg object-cover"
         />
@@ -70,6 +83,7 @@ type BlogItemMenuProps = {
 };
 
 function BlogItemMenu({ postId, authorId }: BlogItemMenuProps) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const user = useQuery(api.auth.getCurrentUser);
 
   if (!user || authorId !== user._id) {
@@ -95,22 +109,49 @@ function BlogItemMenu({ postId, authorId }: BlogItemMenuProps) {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button variant="secondary" className="absolute top-2 right-2 size-8">
-            <EllipsisVertical />
-          </Button>
-        }
-      />
-      <DropdownMenuContent align="end" className="min-w-20">
-        <DropdownMenuGroup>
-          <DropdownMenuItem variant="destructive" onClick={handleDelete}>
-            <Trash2 />
-            刪除
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant="secondary"
+              className="absolute top-2 right-2 size-8"
+            />
+          }
+        >
+          <EllipsisVertical />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-20">
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => setDeleteDialogOpen(true)}
+            >
+              <Trash2 />
+              刪除
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
+              <Trash2 />
+            </AlertDialogMedia>
+            <AlertDialogTitle>確定要刪除這篇文章嗎？</AlertDialogTitle>
+            <AlertDialogDescription>
+              文章刪除後將無法復原。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleDelete}>
+              確定
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
