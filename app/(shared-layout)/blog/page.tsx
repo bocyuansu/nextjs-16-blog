@@ -44,7 +44,7 @@ async function LoadBlogList() {
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {posts?.map((post) => (
+      {posts.map((post) => (
         <Card key={post._id} className="pt-0">
           <div className="relative h-48 w-full overflow-hidden">
             <Image
@@ -67,6 +67,7 @@ async function LoadBlogList() {
             </Link>
             <p className="text-muted-foreground">{post.body.slice(0, 120)}</p>
           </CardContent>
+
           <CardFooter>
             <Link
               className={buttonVariants({ className: "w-full text-lg" })}

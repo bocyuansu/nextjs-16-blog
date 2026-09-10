@@ -1,35 +1,35 @@
-'use client';
+"use client";
 
-import { createPostAction } from '@/app/actions';
-import { Button } from '@/components/ui/button';
+import { createPostAction } from "@/app/actions";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/components/ui/toast';
-import { api } from '@/convex/_generated/api';
-import { Id } from '@/convex/_generated/dataModel';
-import { postSchema } from '@/schemas/blog';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from 'convex/react';
-import { AppWindowIcon, Loader2, SquarePen } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import MarkDownRender from '@/components/web/MarkDownRender';
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/toast";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { postSchema } from "@/schemas/blog";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "convex/react";
+import { AppWindowIcon, Loader2, SquarePen } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import MarkDownRender from "@/components/web/MarkDownRender";
 
 export default function CreatePage() {
   const [isPending, startTransition] = useTransition();
@@ -39,18 +39,16 @@ export default function CreatePage() {
   const form = useForm({
     resolver: zodResolver(postSchema),
     defaultValues: {
-      title: '',
-      content: '',
+      title: "",
+      content: "",
       image: undefined,
     },
   });
 
-  // const content = form.watch('content');
-
   function onSubmit(values: z.infer<typeof postSchema>) {
     startTransition(async () => {
       try {
-        let storageId: Id<'_storage'> | undefined;
+        let storageId: Id<"_storage"> | undefined;
 
         // 如果表單中有選擇圖片，先在前端完成上傳
         if (values.image) {
@@ -59,8 +57,8 @@ export default function CreatePage() {
 
           // 2. 上傳圖片
           const uploadResult = await fetch(uploadUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': values.image.type },
+            method: "POST",
+            headers: { "Content-Type": values.image.type },
             body: values.image,
           });
 
@@ -69,7 +67,7 @@ export default function CreatePage() {
           }
 
           const json = await uploadResult.json();
-          storageId = json.storageId as Id<'_storage'>;
+          storageId = json.storageId as Id<"_storage">;
 
           // 呼叫 Server Action（有上傳圖片）
           await createPostAction({
@@ -86,17 +84,17 @@ export default function CreatePage() {
         }
 
         toast.add({
-          type: 'success',
-          description: '成功建立貼文 !',
+          type: "success",
+          description: "成功建立貼文 !",
         });
 
-        router.push('/blog');
+        router.push("/blog");
       } catch (error) {
-        console.error('建立貼文失敗:', error);
+        console.error("建立貼文失敗:", error);
         toast.add({
-          type: 'error',
-          description: '用戶未登入，無法建立貼文 !',
-          priority: 'high',
+          type: "error",
+          description: "用戶未登入，無法建立貼文 !",
+          priority: "high",
         });
       }
     });

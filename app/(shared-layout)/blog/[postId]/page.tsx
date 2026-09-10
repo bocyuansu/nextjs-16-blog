@@ -1,26 +1,25 @@
 // UI
-import { buttonVariants } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { ArrowLeft } from 'lucide-react';
+import { buttonVariants } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { ArrowLeft } from "lucide-react";
 // Convex & Auth
-import { api } from '@/convex/_generated/api';
-import { Id } from '@/convex/_generated/dataModel';
-import { fetchQuery, preloadQuery } from 'convex/nextjs';
-import { fetchAuthQuery } from '@/lib/auth-server';
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { fetchQuery, preloadQuery } from "convex/nextjs";
+import { fetchAuthQuery } from "@/lib/auth-server";
 // Next
-import { Metadata } from 'next';
-import Image from 'next/image';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 // Component
-import CommentSection from '@/components/web/CommentSection';
-import PostPresence from '@/components/web/PostPresence';
+import CommentSection from "@/components/web/CommentSection";
+import PostPresence from "@/components/web/PostPresence";
 // Markdown
-import MarkDownRender from '@/components/web/MarkDownRender';
+import MarkDownRender from "@/components/web/MarkDownRender";
 
 interface PostIdRouteProps {
   params: Promise<{
-    postId: Id<'posts'>;
+    postId: Id<"posts">;
   }>;
 }
 
@@ -33,7 +32,7 @@ export async function generateMetadata({
 
   if (!post) {
     return {
-      title: 'Post not found',
+      title: "Post not found",
     };
   }
 
@@ -62,17 +61,17 @@ export default async function PostIdRoute({ params }: PostIdRouteProps) {
 
   // 格式化日期
   const date = new Date(post._creationTime);
-  const formatDate = date.toLocaleDateString('zh-TW', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  const formatDate = date.toLocaleDateString("zh-TW", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4 animate-in fade-in duration-500 relative">
       <Link
         href="/blog"
-        className={buttonVariants({ variant: 'outline', className: 'mb-4' })}
+        className={buttonVariants({ variant: "outline", className: "mb-4" })}
       >
         <ArrowLeft className="size-4" />
         Back to blog
@@ -82,7 +81,7 @@ export default async function PostIdRoute({ params }: PostIdRouteProps) {
         <Image
           src={
             post?.imageUrl ??
-            'https://images.unsplash.com/photo-1526779259212-939e64788e3c?q=80&w=1174&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+            "https://images.unsplash.com/photo-1526779259212-939e64788e3c?q=80&w=1174&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           }
           alt={post.title}
           fill
@@ -105,17 +104,13 @@ export default async function PostIdRoute({ params }: PostIdRouteProps) {
 
       <Separator className="my-8" />
 
-      {/* <p className="text-lg leading-relaxed text-foreground/90 whitespace-pre-wrap">
-        {post.body}
-      </p> */}
-
       <MarkDownRender markdown={post.body} />
 
       <Separator className="my-8" />
 
       <CommentSection
         preloadedComments={preloadedComments}
-        username={user ? user.name : '訪客'}
+        username={user ? user.name : "訪客"}
         isGuest={!user}
       />
     </div>
